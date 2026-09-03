@@ -1,0 +1,228 @@
+/* Game-Specific Styles */
+
+/* Header */
+.game-header {
+    background-color: var(--light-bg);
+    border-bottom: 2px solid var(--primary-color);
+    padding: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
+.game-header h1 {
+    margin: 0 0 var(--spacing) 0;
+    text-align: center;
+    color: var(--primary-color);
+}
+
+.header-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing);
+    font-size: 0.95rem;
+}
+
+/* Main Layout */
+.game-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing);
+    padding: 0 var(--spacing);
+    margin-bottom: var(--spacing);
+    grid-auto-rows: max-content;
+}
+
+.reactor-panel {
+    grid-column: 1 / 2;
+}
+
+.upgrades-panel {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+}
+
+.stats-panel {
+    grid-column: 1 / 2;
+}
+
+/* Reactor Status */
+.reactor-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing);
+    margin-bottom: var(--spacing);
+}
+
+.reactor-visual {
+    width: 100px;
+    height: 100px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 107, 107, 0.3) 0%, transparent 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    position: relative;
+}
+
+.reactor-visual::before {
+    content: '⚛';
+    color: var(--primary-color);
+    animation: pulse 2s infinite;
+}
+
+.reactor-info {
+    flex: 1;
+}
+
+.reactor-info p {
+    margin: 0.5em 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+}
+
+/* Upgrades List */
+.upgrades-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing);
+}
+
+.upgrade-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.upgrade-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+}
+
+.upgrade-info {
+    flex: 1;
+}
+
+.upgrade-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+}
+
+.upgrade-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0 0 4px 0;
+}
+
+.upgrade-level {
+    color: var(--secondary-color);
+    font-size: 0.85rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.upgrade-btn {
+    white-space: nowrap;
+    margin-left: var(--spacing);
+    flex-shrink: 0;
+}
+
+/* Stats Display */
+.stats-display {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stats-display p {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Footer */
+.game-footer {
+    background-color: var(--light-bg);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing);
+    display: flex;
+    gap: var(--spacing);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.save-status {
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.save-status.success {
+    background-color: rgba(81, 207, 102, 0.2);
+    color: var(--success);
+    opacity: 1;
+}
+
+.save-status.error {
+    background-color: rgba(255, 107, 107, 0.2);
+    color: var(--danger);
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .game-main {
+        grid-template-columns: 1fr;
+    }
+
+    .upgrades-panel {
+        grid-column: 1 / 2;
+        grid-row: auto;
+    }
+
+    .stats-panel {
+        grid-column: 1 / 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .reactor-status {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .upgrade-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upgrade-btn {
+        margin-left: 0;
+        margin-top: 8px;
+        width: 100%;
+    }
+
+    .game-footer {
+        justify-content: stretch;
+    }
+
+    .btn {
+        flex: 1;
+    }
+}
