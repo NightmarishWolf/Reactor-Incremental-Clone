@@ -1,4 +1,4 @@
-/* Game-Specific Styles */
+/* Game-Specific Styles - Ultra Dark Mode */
 
 /* Main Layout */
 .game-main {
@@ -31,7 +31,7 @@
     height: auto;
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    background-color: var(--dark-bg);
+    background-color: #050508;
     cursor: pointer;
     margin-bottom: var(--spacing);
     display: block;
@@ -39,7 +39,7 @@
 
 .grid-info {
     padding: var(--spacing);
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.02);
     border-radius: var(--radius);
     font-size: 0.9rem;
 }
@@ -80,16 +80,16 @@
 }
 
 .btn-warning {
-    background-color: #ffd93d;
-    color: #000;
+    background-color: var(--warning);
+    color: #c0c0c0;
 }
 
 .btn-warning:hover {
-    background-color: #ffb700;
+    background-color: #9d7a00;
 }
 
 .btn.selected {
-    box-shadow: 0 0 12px rgba(78, 205, 196, 0.5);
+    box-shadow: 0 0 12px rgba(51, 128, 128, 0.3);
     border: 2px solid var(--secondary-color);
 }
 
@@ -110,7 +110,7 @@
 .bar-container {
     width: 100%;
     height: 24px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.6);
     border-radius: 4px;
     border: 1px solid var(--border-color);
     overflow: hidden;
@@ -125,11 +125,11 @@
 }
 
 .power-bar {
-    background: linear-gradient(90deg, #51cf66 0%, #4ecdc4 100%);
+    background: linear-gradient(90deg, #2d7d4d 0%, #338080 100%);
 }
 
 .heat-bar {
-    background: linear-gradient(90deg, #51cf66 0%, #ffd93d 50%, #ff6b6b 100%);
+    background: linear-gradient(90deg, #2d7d4d 0%, #8b7000 50%, #8b3333 100%);
 }
 
 .bar-text {
@@ -180,13 +180,13 @@
 }
 
 .save-status.success {
-    background-color: rgba(81, 207, 102, 0.2);
+    background-color: rgba(45, 125, 77, 0.3);
     color: var(--success);
     opacity: 1;
 }
 
 .save-status.error {
-    background-color: rgba(255, 107, 107, 0.2);
+    background-color: rgba(139, 51, 51, 0.3);
     color: var(--danger);
     opacity: 1;
 }
