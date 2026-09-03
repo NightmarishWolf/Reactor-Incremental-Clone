@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reactor Incremental</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div id="app" class="game-container">
+        <header class="game-header">
+            <h1>⚛ Reactor Incremental</h1>
+            <div class="header-stats">
+                <div class="stat">
+                    <span class="label">Cash:</span>
+                    <span id="stat-cash" class="value">$0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Power:</span>
+                    <span id="stat-power" class="value">0</span> / <span id="stat-power-max" class="value">100</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Heat:</span>
+                    <span id="stat-heat" class="value">0</span> / <span id="stat-heat-max" class="value">100</span>
+                    (<span id="stat-heat-percent" class="value">0%</span>)
+                </div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <!-- Reactor Grid Section -->
+            <section class="panel reactor-section">
+                <h2>Reactor Grid</h2>
+                <canvas id="reactor-grid" width="450" height="450" class="reactor-canvas"></canvas>
+                
+                <div class="grid-info">
+                    <p>Power Output: <span id="stat-power-gen">0</span></p>
+                    <p>Heat Output: <span id="stat-heat-gen">0</span></p>
+                    <p>Click cells to place/remove. Select tier and type below.</p>
+                </div>
+            </section>
+
+            <!-- Control Panel -->
+            <section class="panel control-section">
+                <h2>Controls</h2>
+                
+                <div class="control-group">
+                    <h3>Generate Resources</h3>
+                    <button id="btn-cash" class="btn btn-primary btn-large">Scrounge for Cash</button>
+                    <button id="btn-cool" class="btn btn-secondary btn-large">Cool Down Reactor</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>Cell Type</h3>
+                    <div class="button-group">
+                        <button id="btn-type-single" class="btn btn-secondary">Single</button>
+                        <button id="btn-type-double" class="btn btn-secondary">Double</button>
+                        <button id="btn-type-quad" class="btn btn-secondary">Quad</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Cell Tier</h3>
+                    <button id="btn-buy-uranium" class="btn btn-primary">Uranium</button>
+                    <button id="btn-buy-plutonium" class="btn btn-danger">Plutonium</button>
+                    <button id="btn-buy-thorium" class="btn btn-warning">Thorium</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>Buildings</h3>
+                    <button id="btn-buy-capacitor" class="btn btn-secondary btn-small">Capacitor</button>
+                    <button id="btn-buy-plating" class="btn btn-secondary btn-small">Plating</button>
+                    <button id="btn-buy-vent" class="btn btn-secondary btn-small">Vent</button>
+                </div>
+            </section>
+
+            <!-- Status Bars -->
+            <section class="panel status-section">
+                <h2>Status</h2>
+                
+                <div class="status-bar">
+                    <label>Power</label>
+                    <div class="bar-container">
+                        <div id="power-bar" class="bar power-bar"></div>
+                    </div>
+                    <span class="bar-text"><span id="stat-power">0</span> / <span id="stat-power-max">100</span></span>
+                </div>
+
+                <div class="status-bar">
+                    <label>Heat</label>
+                    <div class="bar-container">
+                        <div id="heat-bar" class="bar heat-bar"></div>
+                    </div>
+                    <span class="bar-text"><span id="stat-heat">0</span> / <span id="stat-heat-max">100</span></span>
+                </div>
+            </section>
+        </main>
+
+        <footer class="game-footer">
+            <button id="btn-save" class="btn btn-secondary">Save</button>
+            <button id="btn-load" class="btn btn-secondary">Load</button>
+            <button id="btn-reset" class="btn btn-danger">Reset</button>
+            <span id="save-status" class="save-status"></span>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils/Config.js"></script>
+    <script src="js/utils/Math.js"></script>
+    <script src="js/utils/Format.js"></script>
+    <script src="js/core/Events.js"></script>
+    <script src="js/core/Player.js"></script>
+    <script src="js/systems/Save.js"></script>
+    <script src="js/systems/ReactorGrid.js"></script>
+    <script src="js/systems/Reactor.js"></script>
+    <script src="js/systems/Energy.js"></script>
+    <script src="js/systems/UI.js"></script>
+    <script src="js/core/Game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
+
