@@ -88,9 +88,14 @@
     background-color: #9d7a00;
 }
 
-.btn.selected {
-    box-shadow: 0 0 12px rgba(51, 128, 128, 0.3);
-    border: 2px solid var(--secondary-color);
+.btn-warning.selected {
+    animation: flash-glow 0.6s ease-in-out infinite;
+}
+
+.btn-primary.selected,
+.btn-secondary.selected,
+.btn-danger.selected {
+    animation: flash-glow 0.6s ease-in-out infinite;
 }
 
 /* Status Bars */

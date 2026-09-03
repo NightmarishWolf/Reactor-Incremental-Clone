@@ -1,13 +1,16 @@
 /* Global Configuration */
 const CONFIG = {
     // Grid reactor
-    GRID_WIDTH: 6,
-    GRID_HEIGHT: 6,
+    GRID_WIDTH: 15,
+    GRID_HEIGHT: 15,
     CELL_SIZE: 50,
     
     // Cash system
     CASH_PER_CLICK: 1,
     CASH_PER_CLICK_UPGRADE_COST: 10,
+    
+    // Power selling
+    POWER_SELL_PRICE: 0.1, // Cash per power unit sold
     
     // Fuel cell tiers
     CELL_TIERS: [
@@ -17,7 +20,7 @@ const CONFIG = {
             tier: 1,
             basePower: 1,
             baseHeat: 1,
-            cost: 10,
+            costs: { single: 10, double: 25, quad: 50 },
             pulses: { single: 1, double: 2, quad: 4 }
         },
         { 
@@ -26,7 +29,7 @@ const CONFIG = {
             tier: 2,
             basePower: 2,
             baseHeat: 4,
-            cost: 50,
+            costs: { single: 50, double: 125, quad: 250 },
             pulses: { single: 1, double: 2, quad: 4 }
         },
         { 
@@ -35,7 +38,7 @@ const CONFIG = {
             tier: 3,
             basePower: 3,
             baseHeat: 9,
-            cost: 200,
+            costs: { single: 200, double: 500, quad: 1000 },
             pulses: { single: 1, double: 2, quad: 4 }
         }
     ],

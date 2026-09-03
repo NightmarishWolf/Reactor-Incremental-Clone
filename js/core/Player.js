@@ -177,12 +177,21 @@ const Player = {
     },
 
     /**
-     * Auto-dissipate heat from vents
+     * Sell power for cash
      */
-    updateVenting(deltaTime) {
-        const dissipation = this.vents * CONFIG.HEAT_DISSIPATION_PER_VENT * deltaTime;
-        this.dissipateHeat(dissipation);
+    sellPower(amount) {
+        if (this.power < amount) {
+            amount = this.power;
+        }
+        const cashEarned = amount * CONFIG.POWER_SELL_PRICE;
+        this.power -= amount;
+        this.addCash(cashEarned);
+        Events.emit('power-sold', { powerSold: amount, cashEarned });
+        return cashEarned;
     },
+
+    /**
+     * Sell all power
 
     /**
      * Get state for saving
