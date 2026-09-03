@@ -1,8 +1,8 @@
 /* Global Configuration */
 const CONFIG = {
     // Grid reactor
-    GRID_WIDTH: 6,
-    GRID_HEIGHT: 6,
+    GRID_WIDTH: 15,
+    GRID_HEIGHT: 15,
     CELL_SIZE: 50,
     
     // Cash system

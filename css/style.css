@@ -162,12 +162,26 @@ p {
     }
 }
 
+@keyframes flash-glow {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(51, 128, 128, 0.3), inset 0 0 8px rgba(51, 128, 128, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 16px rgba(51, 128, 128, 0.6), inset 0 0 8px rgba(51, 128, 128, 0.2);
+    }
+}
+
 .animate-pulse {
     animation: pulse 2s infinite;
 }
 
 .animate-glow {
     animation: glow 1.5s infinite;
+}
+
+.btn.selected {
+    animation: flash-glow 0.6s ease-in-out infinite;
+    border: 2px solid var(--secondary-color);
 }
 
 /* Responsive */
