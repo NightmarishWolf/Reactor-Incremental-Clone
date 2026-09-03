@@ -1,69 +1,162 @@
 /* Player State Management */
 const Player = {
-    // Core resources
-    energy: 0,
-    fuel: CONFIG.FUEL_BASE,
-    fuelCapacity: CONFIG.FUEL_BASE,
-
-    // Generation stats
-    totalEnergyGenerated: 0,
-    passivePowerPerSecond: CONFIG.BASE_POWER_GENERATION,
-    energyPerClick: CONFIG.BASE_ENERGY_CLICK,
-    efficiency: 1.0,
-
-    // Upgrades tracking
+    // Resources
+    cash: 0,
+    power: 0,
+    heat: 0,
+    
+    // Capacities
+    maxPower: 100,
+    maxHeat: CONFIG.MAX_HEAT_BASE,
+    
+    // Per-click stats
+    cashPerClick: CONFIG.CASH_PER_CLICK,
+    heatDissipationPerClick: CONFIG.HEAT_CLICK_DISSIPATE,
+    
+    // Buildings
+    capacitors: 0,
+    reactorPlating: 0,
+    vents: 0,
+    
+    // Upgrades
     upgrades: {},
-    upgradesCost: {},
-
-    // Time tracking
-    timePlayed: 0,
-    lastUpdateTime: Date.now(),
-
+    
+    // Stats
+    totalPowerGenerated: 0,
+    totalCashEarned: 0,
+    
     /**
-     * Initialize player state
+     * Initialize player
      */
     init() {
         CONFIG.UPGRADES.forEach(upgrade => {
             this.upgrades[upgrade.id] = 0;
-            this.upgradesCost[upgrade.id] = upgrade.cost;
         });
     },
 
     /**
-     * Get current energy
+     * Add cash
      */
-    getEnergy() {
-        return this.energy;
+    addCash(amount) {
+        this.cash += amount;
+        this.totalCashEarned += amount;
+        Events.emit('cash-changed', this.cash);
+        return amount;
     },
 
     /**
-     * Add energy
+     * Spend cash
      */
-    addEnergy(amount) {
-        const actualAmount = amount * this.efficiency;
-        this.energy += actualAmount;
-        this.totalEnergyGenerated += actualAmount;
-        Events.emit('energy-changed', this.energy);
-        return actualAmount;
-    },
-
-    /**
-     * Spend energy
-     */
-    spendEnergy(amount) {
-        if (this.energy >= amount) {
-            this.energy -= amount;
-            Events.emit('energy-changed', this.energy);
+    spendCash(amount) {
+        if (this.cash >= amount) {
+            this.cash -= amount;
+            Events.emit('cash-changed', this.cash);
             return true;
         }
         return false;
     },
 
     /**
-     * Get upgrade cost
+     * Add power
      */
-    getUpgradeCost(upgradeId) {
-        return this.upgradesCost[upgradeId];
+    addPower(amount) {
+        const clamped = Math.min(this.power + amount, this.maxPower);
+        const actualAmount = clamped - this.power;
+        this.power = clamped;
+        this.totalPowerGenerated += actualAmount;
+        Events.emit('power-changed', this.power);
+        return actualAmount;
+    },
+
+    /**
+     * Dissipate heat by clicking
+     */
+    dissipateHeat(amount) {
+        this.heat = Math.max(0, this.heat - amount);
+        Events.emit('heat-changed', this.heat);
+    },
+
+    /**
+     * Add heat to reactor
+     */
+    addHeat(amount) {
+        this.heat = Math.min(this.heat + amount, this.maxHeat);
+        Events.emit('heat-changed', this.heat);
+        
+        // Check for meltdown
+        if (this.heat >= this.maxHeat) {
+            Events.emit('reactor-meltdown');
+        }
+    },
+
+    /**
+     * Get heat percentage
+     */
+    getHeatPercent() {
+        return (this.heat / this.maxHeat) * 100;
+    },
+
+    /**
+     * Buy upgrade
+     */
+    buyUpgrade(upgradeId) {
+        const upgrade = CONFIG.UPGRADES.find(u => u.id === upgradeId);
+        if (!upgrade) return false;
+
+        const level = this.upgrades[upgradeId] || 0;
+        const cost = MathUtils.calculateCost(upgrade.baseCost, upgrade.costMultiplier, level);
+        
+        if (!this.spendCash(cost)) return false;
+
+        this.upgrades[upgradeId]++;
+
+        if (upgrade.effect.cashPerClick) {
+            this.cashPerClick += upgrade.effect.cashPerClick;
+        }
+        if (upgrade.effect.heatDissipation) {
+            this.heatDissipationPerClick += upgrade.effect.heatDissipation;
+        }
+
+        Events.emit('upgrade-bought', { upgradeId, level: this.upgrades[upgradeId] });
+        return true;
+    },
+
+    /**
+     * Buy capacitor
+     */
+    buyCapacitor() {
+        if (this.spendCash(CONFIG.CAPACITOR_COST)) {
+            this.capacitors++;
+            this.maxPower += CONFIG.POWER_STORAGE_PER_CAPACITOR;
+            Events.emit('capacitor-bought', this.capacitors);
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Buy reactor plating
+     */
+    buyPlating() {
+        if (this.spendCash(CONFIG.PLATING_COST)) {
+            this.reactorPlating++;
+            this.maxHeat += CONFIG.HEAT_CAPACITY_PER_PLATING;
+            Events.emit('plating-bought', this.reactorPlating);
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Buy vent
+     */
+    buyVent() {
+        if (this.spendCash(CONFIG.VENT_COST)) {
+            this.vents++;
+            Events.emit('vent-bought', this.vents);
+            return true;
+        }
+        return false;
     },
 
     /**
@@ -74,71 +167,41 @@ const Player = {
     },
 
     /**
-     * Buy an upgrade
+     * Get upgrade cost
      */
-    buyUpgrade(upgradeId) {
-        const cost = this.getUpgradeCost(upgradeId);
-        if (!this.spendEnergy(cost)) return false;
-
+    getUpgradeCost(upgradeId) {
         const upgrade = CONFIG.UPGRADES.find(u => u.id === upgradeId);
-        if (!upgrade) return false;
-
-        this.upgrades[upgradeId]++;
-        this.upgradesCost[upgradeId] = MathUtils.calculateCost(
-            upgrade.baseCost,
-            upgrade.costMultiplier,
-            this.upgrades[upgradeId]
-        );
-
-        // Apply upgrade effects
-        if (upgrade.effect.energyPerClick) {
-            this.energyPerClick += upgrade.effect.energyPerClick;
-        }
-        if (upgrade.effect.passivePower) {
-            this.passivePowerPerSecond += upgrade.effect.passivePower;
-        }
-        if (upgrade.effect.efficiency) {
-            this.efficiency += upgrade.effect.efficiency;
-        }
-        if (upgrade.effect.fuelCapacity) {
-            this.fuelCapacity += upgrade.effect.fuelCapacity;
-        }
-
-        Events.emit('upgrade-bought', { upgradeId, level: this.upgrades[upgradeId] });
-        return true;
+        if (!upgrade) return 0;
+        const level = this.upgrades[upgradeId] || 0;
+        return MathUtils.calculateCost(upgrade.baseCost, upgrade.costMultiplier, level);
     },
 
     /**
-     * Get total power generation per second
+     * Auto-dissipate heat from vents
      */
-    getTotalPowerPerSecond() {
-        return this.passivePowerPerSecond * this.efficiency;
+    updateVenting(deltaTime) {
+        const dissipation = this.vents * CONFIG.HEAT_DISSIPATION_PER_VENT * deltaTime;
+        this.dissipateHeat(dissipation);
     },
 
     /**
-     * Update time tracking
-     */
-    updateTime() {
-        const now = Date.now();
-        const deltaTime = (now - this.lastUpdateTime) / 1000; // Convert to seconds
-        this.timePlayed += deltaTime;
-        this.lastUpdateTime = now;
-    },
-
-    /**
-     * Get serializable state for saving
+     * Get state for saving
      */
     getState() {
         return {
-            energy: this.energy,
-            fuel: this.fuel,
-            fuelCapacity: this.fuelCapacity,
-            totalEnergyGenerated: this.totalEnergyGenerated,
-            passivePowerPerSecond: this.passivePowerPerSecond,
-            energyPerClick: this.energyPerClick,
-            efficiency: this.efficiency,
-            timePlayed: this.timePlayed,
-            upgrades: { ...this.upgrades }
+            cash: this.cash,
+            power: this.power,
+            heat: this.heat,
+            maxPower: this.maxPower,
+            maxHeat: this.maxHeat,
+            cashPerClick: this.cashPerClick,
+            heatDissipationPerClick: this.heatDissipationPerClick,
+            capacitors: this.capacitors,
+            reactorPlating: this.reactorPlating,
+            vents: this.vents,
+            upgrades: { ...this.upgrades },
+            totalPowerGenerated: this.totalPowerGenerated,
+            totalCashEarned: this.totalCashEarned
         };
     },
 
@@ -147,46 +210,38 @@ const Player = {
      */
     setState(state) {
         if (!state) return;
-        this.energy = state.energy || 0;
-        this.fuel = state.fuel || CONFIG.FUEL_BASE;
-        this.fuelCapacity = state.fuelCapacity || CONFIG.FUEL_BASE;
-        this.totalEnergyGenerated = state.totalEnergyGenerated || 0;
-        this.passivePowerPerSecond = state.passivePowerPerSecond || CONFIG.BASE_POWER_GENERATION;
-        this.energyPerClick = state.energyPerClick || CONFIG.BASE_ENERGY_CLICK;
-        this.efficiency = state.efficiency || 1.0;
-        this.timePlayed = state.timePlayed || 0;
-        if (state.upgrades) {
-            this.upgrades = { ...state.upgrades };
-            // Recalculate costs for bought upgrades
-            CONFIG.UPGRADES.forEach(upgrade => {
-                const level = this.upgrades[upgrade.id] || 0;
-                this.upgradesCost[upgrade.id] = MathUtils.calculateCost(
-                    upgrade.baseCost,
-                    upgrade.costMultiplier,
-                    level
-                );
-            });
-        }
+        this.cash = state.cash || 0;
+        this.power = state.power || 0;
+        this.heat = state.heat || 0;
+        this.maxPower = state.maxPower || 100;
+        this.maxHeat = state.maxHeat || CONFIG.MAX_HEAT_BASE;
+        this.cashPerClick = state.cashPerClick || CONFIG.CASH_PER_CLICK;
+        this.heatDissipationPerClick = state.heatDissipationPerClick || CONFIG.HEAT_CLICK_DISSIPATE;
+        this.capacitors = state.capacitors || 0;
+        this.reactorPlating = state.reactorPlating || 0;
+        this.vents = state.vents || 0;
+        this.upgrades = { ...state.upgrades };
+        this.totalPowerGenerated = state.totalPowerGenerated || 0;
+        this.totalCashEarned = state.totalCashEarned || 0;
     },
 
     /**
      * Reset to initial state
      */
     reset() {
-        this.energy = 0;
-        this.fuel = CONFIG.FUEL_BASE;
-        this.fuelCapacity = CONFIG.FUEL_BASE;
-        this.totalEnergyGenerated = 0;
-        this.passivePowerPerSecond = CONFIG.BASE_POWER_GENERATION;
-        this.energyPerClick = CONFIG.BASE_ENERGY_CLICK;
-        this.efficiency = 1.0;
-        this.timePlayed = 0;
+        this.cash = 0;
+        this.power = 0;
+        this.heat = 0;
+        this.maxPower = 100;
+        this.maxHeat = CONFIG.MAX_HEAT_BASE;
+        this.cashPerClick = CONFIG.CASH_PER_CLICK;
+        this.heatDissipationPerClick = CONFIG.HEAT_CLICK_DISSIPATE;
+        this.capacitors = 0;
+        this.reactorPlating = 0;
+        this.vents = 0;
         this.upgrades = {};
-        this.upgradesCost = {};
-        CONFIG.UPGRADES.forEach(upgrade => {
-            this.upgrades[upgrade.id] = 0;
-            this.upgradesCost[upgrade.id] = upgrade.cost;
-        });
+        this.totalPowerGenerated = 0;
+        this.totalCashEarned = 0;
         Events.emit('player-reset');
     }
 };

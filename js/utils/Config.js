@@ -1,59 +1,95 @@
 /* Global Configuration */
 const CONFIG = {
-    // Game mechanics
-    BASE_ENERGY_CLICK: 1,
-    BASE_POWER_GENERATION: 0.1,
-    TEMPERATURE_BASE: 20,
-    TEMPERATURE_PER_CLICK: 5,
-    TEMPERATURE_DECAY: 0.5,
-    FUEL_BASE: 100,
-    FUEL_CONSUMPTION_RATE: 0.1,
+    // Grid reactor
+    GRID_WIDTH: 6,
+    GRID_HEIGHT: 6,
+    CELL_SIZE: 50,
+    
+    // Cash system
+    CASH_PER_CLICK: 1,
+    CASH_PER_CLICK_UPGRADE_COST: 10,
+    
+    // Fuel cell tiers
+    CELL_TIERS: [
+        { 
+            id: 'uranium', 
+            name: 'Uranium', 
+            tier: 1,
+            basePower: 1,
+            baseHeat: 1,
+            cost: 10,
+            pulses: { single: 1, double: 2, quad: 4 }
+        },
+        { 
+            id: 'plutonium', 
+            name: 'Plutonium', 
+            tier: 2,
+            basePower: 2,
+            baseHeat: 4,
+            cost: 50,
+            pulses: { single: 1, double: 2, quad: 4 }
+        },
+        { 
+            id: 'thorium', 
+            name: 'Thorium', 
+            tier: 3,
+            basePower: 3,
+            baseHeat: 9,
+            cost: 200,
+            pulses: { single: 1, double: 2, quad: 4 }
+        }
+    ],
+    
+    // Cell types
+    CELL_TYPES: {
+        SINGLE: 'single',
+        DOUBLE: 'double',
+        QUAD: 'quad'
+    },
+    
+    // Heat management
+    HEAT_CLICK_DISSIPATE: 1,
+    MAX_HEAT_BASE: 100,
+    HEAT_EXPLOSION_THRESHOLD: 1.0, // at 100% heat, meltdown begins
+    
+    // Capacitors
+    CAPACITOR_COST: 50,
+    POWER_STORAGE_PER_CAPACITOR: 100,
+    
+    // Reactor plating
+    PLATING_COST: 50,
+    HEAT_CAPACITY_PER_PLATING: 100,
+    
+    // Venting (cooling)
+    VENT_COST: 100,
+    HEAT_DISSIPATION_PER_VENT: 5,
     
     // Upgrades
     UPGRADES: [
         {
-            id: 'click-power',
-            name: 'Enhanced Reactor Click',
-            description: '+1 energy per click',
-            cost: 10,
+            id: 'cash-click',
+            name: 'Better Scrounging',
+            description: '+1 cash per click',
             baseCost: 10,
             costMultiplier: 1.15,
-            effect: { energyPerClick: 1 }
+            effect: { cashPerClick: 1 }
         },
         {
-            id: 'passive-power',
-            name: 'Passive Generation',
-            description: '+0.1 energy/sec',
-            cost: 50,
+            id: 'heat-click',
+            name: 'Advanced Cooling',
+            description: '+1 heat dissipation per click',
             baseCost: 50,
             costMultiplier: 1.15,
-            effect: { passivePower: 0.1 }
-        },
-        {
-            id: 'efficiency',
-            name: 'Improved Efficiency',
-            description: '+5% energy efficiency',
-            cost: 100,
-            baseCost: 100,
-            costMultiplier: 1.15,
-            effect: { efficiency: 0.05 }
-        },
-        {
-            id: 'fuel-capacity',
-            name: 'Expanded Fuel Tank',
-            description: '+100 fuel capacity',
-            cost: 200,
-            baseCost: 200,
-            costMultiplier: 1.15,
-            effect: { fuelCapacity: 100 }
+            effect: { heatDissipation: 1 }
         }
     ],
     
-    // UI update frequency
-    UPDATE_RATE: 100, // ms
-    SAVE_INTERVAL: 5000, // ms
+    // Prestige
+    PRESTIGE_UNLOCK_POWER: 1e6,
     
-    // Formatting
+    // UI
+    UPDATE_RATE: 100,
+    SAVE_INTERVAL: 5000,
     LARGE_NUMBER_THRESHOLD: 1e6,
     DECIMAL_PLACES: 2
 };

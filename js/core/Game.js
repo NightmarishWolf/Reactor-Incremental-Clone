@@ -11,7 +11,7 @@ const Game = {
         console.log('Initializing Reactor Incremental...');
         
         Player.init();
-        Reactor.init();
+        ReactorGrid.init();
         UI.init();
 
         // Try to load save
@@ -20,9 +20,7 @@ const Game = {
             console.log('Loading saved game...');
             Player.setState(saveData.player);
             Reactor.setState(saveData.reactor);
-            UI.renderUpgrades();
-            UI.updateStats();
-            UI.updateReactorStatus();
+            UI.render();
         }
 
         this.start();
@@ -52,9 +50,8 @@ const Game = {
         this.lastUpdateTime = now;
 
         // Update systems
-        Player.updateTime();
         Reactor.update(deltaTime);
-        Energy.update(deltaTime);
+        Player.updateVenting(deltaTime);
 
         requestAnimationFrame(() => this.gameLoop());
     },
@@ -82,9 +79,7 @@ const Game = {
 
         Player.setState(saveData.player);
         Reactor.setState(saveData.reactor);
-        UI.renderUpgrades();
-        UI.updateStats();
-        UI.updateReactorStatus();
+        UI.render();
         Save.showSaveStatus('Game loaded!', 'success');
     },
 
@@ -93,11 +88,9 @@ const Game = {
      */
     reset() {
         Player.reset();
-        Reactor.init();
+        Reactor.reset();
         Save.delete();
-        UI.renderUpgrades();
-        UI.updateStats();
-        UI.updateReactorStatus();
+        UI.render();
         Save.showSaveStatus('Game reset!', 'success');
     },
 

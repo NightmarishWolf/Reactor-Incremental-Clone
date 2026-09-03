@@ -21,7 +21,35 @@ const Format = {
     },
 
     /**
-     * Format time in seconds to human-readable format
+     * Format cash
+     */
+    formatCash(amount) {
+        return '$' + this.formatNumber(amount);
+    },
+
+    /**
+     * Format power
+     */
+    formatPower(power) {
+        return this.formatNumber(power) + ' W';
+    },
+
+    /**
+     * Format heat
+     */
+    formatHeat(heat) {
+        return this.formatNumber(heat) + ' H';
+    },
+
+    /**
+     * Format percentage
+     */
+    formatPercent(value, decimals = 1) {
+        return value.toFixed(decimals) + '%';
+    },
+
+    /**
+     * Format time in seconds
      */
     formatTime(seconds) {
         if (seconds < 60) {
@@ -41,34 +69,6 @@ const Format = {
 
         const days = Math.floor(hours / 24);
         return days + 'd ' + (hours % 24) + 'h';
-    },
-
-    /**
-     * Format percentage
-     */
-    formatPercent(value, decimals = 1) {
-        return value.toFixed(decimals) + '%';
-    },
-
-    /**
-     * Format temperature
-     */
-    formatTemp(temp) {
-        return Math.round(temp) + '°C';
-    },
-
-    /**
-     * Format energy with unit
-     */
-    formatEnergy(energy) {
-        return this.formatNumber(energy) + ' E';
-    },
-
-    /**
-     * Format power generation
-     */
-    formatPower(power) {
-        return this.formatNumber(power) + '/s';
     }
 };
 
