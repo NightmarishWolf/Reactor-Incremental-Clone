@@ -34,14 +34,42 @@ const UI = {
             });
         }
 
-        // Building buttons
-        document.getElementById('btn-buy-uranium')?.addEventListener('click', () => this.selectedTier = 'uranium');
-        document.getElementById('btn-buy-plutonium')?.addEventListener('click', () => this.selectedTier = 'plutonium');
-        document.getElementById('btn-buy-thorium')?.addEventListener('click', () => this.selectedTier = 'thorium');
+        // Sell power button
+        const sellBtn = document.getElementById('btn-sell-power');
+        if (sellBtn) {
+            sellBtn.addEventListener('click', () => {
+                Player.sellPower(Player.power);
+                this.render();
+            });
+        }
 
-        document.getElementById('btn-type-single')?.addEventListener('click', () => this.selectedType = CONFIG.CELL_TYPES.SINGLE);
-        document.getElementById('btn-type-double')?.addEventListener('click', () => this.selectedType = CONFIG.CELL_TYPES.DOUBLE);
-        document.getElementById('btn-type-quad')?.addEventListener('click', () => this.selectedType = CONFIG.CELL_TYPES.QUAD);
+        // Tier selection
+        document.getElementById('btn-buy-uranium')?.addEventListener('click', () => {
+            this.selectedTier = 'uranium';
+            this.updateBuildMenu();
+        });
+        document.getElementById('btn-buy-plutonium')?.addEventListener('click', () => {
+            this.selectedTier = 'plutonium';
+            this.updateBuildMenu();
+        });
+        document.getElementById('btn-buy-thorium')?.addEventListener('click', () => {
+            this.selectedTier = 'thorium';
+            this.updateBuildMenu();
+        });
+
+        // Type selection
+        document.getElementById('btn-type-single')?.addEventListener('click', () => {
+            this.selectedType = CONFIG.CELL_TYPES.SINGLE;
+            this.updateBuildMenu();
+        });
+        document.getElementById('btn-type-double')?.addEventListener('click', () => {
+            this.selectedType = CONFIG.CELL_TYPES.DOUBLE;
+            this.updateBuildMenu();
+        });
+        document.getElementById('btn-type-quad')?.addEventListener('click', () => {
+            this.selectedType = CONFIG.CELL_TYPES.QUAD;
+            this.updateBuildMenu();
+        });
 
         // Building cost buttons
         document.getElementById('btn-buy-capacitor')?.addEventListener('click', () => {
@@ -91,11 +119,11 @@ const UI = {
         const cellSize = (canvas.width / CONFIG.GRID_WIDTH);
 
         // Clear canvas
-        ctx.fillStyle = '#1a1a2e';
+        ctx.fillStyle = '#050508';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Draw grid
-        ctx.strokeStyle = '#2d3561';
+        ctx.strokeStyle = '#161620';
         ctx.lineWidth = 1;
         for (let x = 0; x <= CONFIG.GRID_WIDTH; x++) {
             ctx.beginPath();
@@ -121,7 +149,11 @@ const UI = {
         }
 
         // Add click handler
-        canvas.addEventListener('click', (e) => this.handleGridClick(e, canvas, cellSize));
+        canvas.addEventListener('click', (e) => this.handleGridClick(e, canvas, cellSize, false));
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.handleGridClick(e, canvas, cellSize, true);
+        });
     },
 
     /**
@@ -134,45 +166,63 @@ const UI = {
         const px = x * cellSize;
         const py = y * cellSize;
         const colors = {
-            uranium: '#51cf66',
-            plutonium: '#ff6b6b',
-            thorium: '#ffd93d'
+            uranium: '#4a9d6f',
+            plutonium: '#cc5555',
+            thorium: '#8b7000'
         };
 
         ctx.fillStyle = colors[cell.tier] || '#ffffff';
         ctx.fillRect(px + 2, py + 2, cellSize - 4, cellSize - 4);
 
-        // Draw tier indicator
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px Arial';
+        // Draw type indicator
+        ctx.fillStyle = '#c0c0c0';
+        ctx.font = 'bold 10px Arial';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(cell.type[0].toUpperCase(), px + cellSize / 2, py + 4);
+        
+        // Draw tier indicator
+        ctx.font = 'bold 14px Arial';
         ctx.textBaseline = 'middle';
-        ctx.fillText(tierData.tier, px + cellSize / 2, py + cellSize / 2);
+        ctx.fillText(tierData.tier, px + cellSize / 2, py + cellSize / 2 + 4);
     },
 
     /**
-     * Handle grid click
+     * Handle grid click/right-click
      */
-    handleGridClick(e, canvas, cellSize) {
+    handleGridClick(e, canvas, cellSize, isRightClick) {
         const rect = canvas.getBoundingClientRect();
         const x = Math.floor((e.clientX - rect.left) / cellSize);
         const y = Math.floor((e.clientY - rect.top) / cellSize);
 
         if (ReactorGrid.isValid(x, y)) {
             const cell = ReactorGrid.getCell(x, y);
-            if (cell.type) {
-                // Remove cell
-                ReactorGrid.removeCell(x, y);
+            
+            if (isRightClick) {
+                // Right-click: remove cell
+                if (cell.type) {
+                    ReactorGrid.removeCell(x, y);
+                    this.render();
+                }
             } else {
-                // Place cell
-                const tierData = CONFIG.CELL_TIERS.find(t => t.id === this.selectedTier);
-                if (tierData && Player.spendCash(tierData.cost)) {
-                    ReactorGrid.placeCell(x, y, this.selectedTier, this.selectedType);
+                // Left-click: place cell
+                if (cell.type) {
+                    // Already occupied
+                    Save.showSaveStatus('Cell already placed!', 'error');
                 } else {
-                    Save.showSaveStatus('Not enough cash!', 'error');
+                    const tierData = CONFIG.CELL_TIERS.find(t => t.id === this.selectedTier);
+                    if (!tierData) return;
+                    
+                    const cost = tierData.costs[this.selectedType];
+                    
+                    if (Player.spendCash(cost)) {
+                        ReactorGrid.placeCell(x, y, this.selectedTier, this.selectedType);
+                        this.render();
+                    } else {
+                        Save.showSaveStatus('Not enough cash!', 'error');
+                    }
                 }
             }
-            this.render();
         }
     },
 
@@ -206,11 +256,11 @@ const UI = {
             heatBar.style.width = Player.getHeatPercent() + '%';
             // Color based on heat
             if (Player.getHeatPercent() > 75) {
-                heatBar.style.backgroundColor = '#ff6b6b';
+                heatBar.style.backgroundColor = '#8b3333';
             } else if (Player.getHeatPercent() > 50) {
-                heatBar.style.backgroundColor = '#ffd93d';
+                heatBar.style.backgroundColor = '#8b7000';
             } else {
-                heatBar.style.backgroundColor = '#51cf66';
+                heatBar.style.backgroundColor = '#2d7d4d';
             }
         }
     },
@@ -224,8 +274,17 @@ const UI = {
             const btn = document.getElementById(`btn-buy-${tier}`);
             if (btn) {
                 const tierData = CONFIG.CELL_TIERS.find(t => t.id === tier);
-                btn.textContent = `${tierData.name} - ${Format.formatCash(tierData.cost)}`;
+                const cost = tierData.costs[this.selectedType];
+                btn.textContent = `${tierData.name} - ${Format.formatCash(cost)}`;
                 btn.classList.toggle('selected', this.selectedTier === tier);
+            }
+        });
+
+        // Update type buttons
+        ['single', 'double', 'quad'].forEach(type => {
+            const btn = document.getElementById(`btn-type-${type}`);
+            if (btn) {
+                btn.classList.toggle('selected', this.selectedType === type);
             }
         });
 
