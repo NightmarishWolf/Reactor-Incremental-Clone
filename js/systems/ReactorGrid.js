@@ -34,7 +34,9 @@ const ReactorGrid = {
      */
     getCell(x, y) {
         if (!this.isValid(x, y)) return null;
-        return this.grid[y][x];
+        const row = this.grid[y];
+        if (!row) return null;
+        return row[x];
     },
 
     /**
@@ -160,7 +162,7 @@ const ReactorGrid = {
         for (let y = 0; y < CONFIG.GRID_HEIGHT; y++) {
             for (let x = 0; x < CONFIG.GRID_WIDTH; x++) {
                 const cell = this.getCell(x, y);
-                if (cell.type) {
+                if (cell && cell.type) {
                     totalPower += this.calculateCellPower(x, y);
                     totalHeat += this.calculateCellHeat(x, y);
                 }
@@ -178,7 +180,7 @@ const ReactorGrid = {
         for (let y = 0; y < CONFIG.GRID_HEIGHT; y++) {
             for (let x = 0; x < CONFIG.GRID_WIDTH; x++) {
                 const cell = this.getCell(x, y);
-                if (cell.type) {
+                if (cell && cell.type) {
                     cells.push({
                         ...cell,
                         power: this.calculateCellPower(x, y),
@@ -205,6 +207,15 @@ const ReactorGrid = {
     setState(state) {
         if (!state || !state.grid) return;
         this.grid = JSON.parse(JSON.stringify(state.grid));
+        // Backfill any missing cells/rows from older saves
+        for (let y = 0; y < CONFIG.GRID_HEIGHT; y++) {
+            if (!this.grid[y]) this.grid[y] = [];
+            for (let x = 0; x < CONFIG.GRID_WIDTH; x++) {
+                if (!this.grid[y][x]) {
+                    this.grid[y][x] = { x, y, type: null, tier: null, active: false };
+                }
+            }
+        }
     },
 
     /**
@@ -212,5 +223,6 @@ const ReactorGrid = {
      */
     reset() {
         this.init();
+        Events.emit('grid-reset');
     }
 };

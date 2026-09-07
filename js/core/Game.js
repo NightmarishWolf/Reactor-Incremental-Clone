@@ -9,20 +9,20 @@ const Game = {
      */
     init() {
         console.log('Initializing Reactor Incremental...');
-        
+
+        // Initialize core systems in correct order
         Player.init();
         ReactorGrid.init();
-        UI.init();
 
-        // Try to load save
+        // Try to load save before UI binds to DOM
         const saveData = Save.load();
         if (saveData) {
             console.log('Loading saved game...');
             Player.setState(saveData.player);
             Reactor.setState(saveData.reactor);
-            UI.render();
         }
 
+        UI.init();
         this.start();
     },
 
@@ -78,7 +78,7 @@ const Game = {
         }
 
         Player.setState(saveData.player);
-        Reactor.setState(saveData.reactor);
+        ReactorGrid.setState(saveData.reactor);
         UI.render();
         Save.showSaveStatus('Game loaded!', 'success');
     },
@@ -90,6 +90,7 @@ const Game = {
         Player.reset();
         Reactor.reset();
         Save.delete();
+        ReactorGrid.init();
         UI.render();
         Save.showSaveStatus('Game reset!', 'success');
     },
