@@ -29,6 +29,7 @@ const Player = {
      * Initialize player
      */
     init() {
+        this.maxHeat = CONFIG.MAX_HEAT_BASE;
         CONFIG.UPGRADES.forEach(upgrade => {
             this.upgrades[upgrade.id] = 0;
         });
@@ -160,6 +161,14 @@ const Player = {
     },
 
     /**
+     * Passive heat venting per second
+     */
+    updateVenting(deltaTime) {
+        const dissipated = this.vents * CONFIG.HEAT_DISSIPATION_PER_VENT * deltaTime;
+        this.dissipateHeat(dissipated);
+    },
+
+    /**
      * Get upgrade level
      */
     getUpgradeLevel(upgradeId) {
@@ -191,9 +200,6 @@ const Player = {
     },
 
     /**
-     * Sell all power
-
-    /**
      * Get state for saving
      */
     getState() {
@@ -208,7 +214,7 @@ const Player = {
             capacitors: this.capacitors,
             reactorPlating: this.reactorPlating,
             vents: this.vents,
-            upgrades: { ...this.upgrades },
+            upgrades: { ...(this.upgrades || {}) },
             totalPowerGenerated: this.totalPowerGenerated,
             totalCashEarned: this.totalCashEarned
         };
@@ -229,7 +235,7 @@ const Player = {
         this.capacitors = state.capacitors || 0;
         this.reactorPlating = state.reactorPlating || 0;
         this.vents = state.vents || 0;
-        this.upgrades = { ...state.upgrades };
+        this.upgrades = { ...(state.upgrades || {}) };
         this.totalPowerGenerated = state.totalPowerGenerated || 0;
         this.totalCashEarned = state.totalCashEarned || 0;
     },
@@ -242,13 +248,12 @@ const Player = {
         this.power = 0;
         this.heat = 0;
         this.maxPower = 100;
-        this.maxHeat = CONFIG.MAX_HEAT_BASE;
+        this.init();
         this.cashPerClick = CONFIG.CASH_PER_CLICK;
         this.heatDissipationPerClick = CONFIG.HEAT_CLICK_DISSIPATE;
         this.capacitors = 0;
         this.reactorPlating = 0;
         this.vents = 0;
-        this.upgrades = {};
         this.totalPowerGenerated = 0;
         this.totalCashEarned = 0;
         Events.emit('player-reset');

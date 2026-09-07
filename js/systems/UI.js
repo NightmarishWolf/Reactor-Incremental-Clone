@@ -16,6 +16,16 @@ const UI = {
      * Setup all event listeners
      */
     setupEventListeners() {
+        // Grid canvas interactions (attach once)
+        const canvas = document.getElementById('reactor-grid');
+        if (canvas) {
+            canvas.addEventListener('click', (e) => this.handleGridClick(e, false));
+            canvas.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                this.handleGridClick(e, true);
+            });
+        }
+
         // Cash click button
         const cashBtn = document.getElementById('btn-cash');
         if (cashBtn) {
@@ -97,6 +107,8 @@ const UI = {
         Events.on('power-changed', () => this.updateStats());
         Events.on('heat-changed', () => this.updateStats());
         Events.on('reactor-meltdown', () => this.showMeltdown());
+        Events.on('grid-reset', () => this.render());
+        Events.on('player-reset', () => this.render());
     },
 
     /**
@@ -147,13 +159,6 @@ const UI = {
                 }
             }
         }
-
-        // Add click handler
-        canvas.addEventListener('click', (e) => this.handleGridClick(e, canvas, cellSize, false));
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            this.handleGridClick(e, canvas, cellSize, true);
-        });
     },
 
     /**
@@ -190,14 +195,19 @@ const UI = {
     /**
      * Handle grid click/right-click
      */
-    handleGridClick(e, canvas, cellSize, isRightClick) {
+    handleGridClick(e, isRightClick) {
+        const canvas = document.getElementById('reactor-grid');
+        if (!canvas) return;
+
+        const cellSize = canvas.width / CONFIG.GRID_WIDTH;
         const rect = canvas.getBoundingClientRect();
         const x = Math.floor((e.clientX - rect.left) / cellSize);
         const y = Math.floor((e.clientY - rect.top) / cellSize);
 
         if (ReactorGrid.isValid(x, y)) {
             const cell = ReactorGrid.getCell(x, y);
-            
+            if (!cell) return;
+
             if (isRightClick) {
                 // Right-click: remove cell
                 if (cell.type) {
@@ -234,30 +244,41 @@ const UI = {
         const power = Player.power;
         const heat = Player.heat;
         const output = Reactor.getOutput();
+        const maxPower = Player.maxPower || 1;
+        const maxHeat = Player.maxHeat || 1;
+        const heatPercent = (heat / maxHeat) * 100;
 
-        document.getElementById('stat-cash').textContent = Format.formatCash(cash);
-        document.getElementById('stat-power').textContent = Format.formatPower(power);
-        document.getElementById('stat-power-max').textContent = Format.formatPower(Player.maxPower);
-        document.getElementById('stat-heat').textContent = Format.formatHeat(heat);
-        document.getElementById('stat-heat-max').textContent = Format.formatHeat(Player.maxHeat);
-        document.getElementById('stat-heat-percent').textContent = Format.formatPercent(Player.getHeatPercent());
+        const statCash = document.getElementById('stat-cash');
+        if (statCash) statCash.textContent = Format.formatCash(cash);
+        const statPower = document.getElementById('stat-power');
+        if (statPower) statPower.textContent = Format.formatPower(power);
+        const statPowerMax = document.getElementById('stat-power-max');
+        if (statPowerMax) statPowerMax.textContent = Format.formatPower(maxPower);
+        const statHeat = document.getElementById('stat-heat');
+        if (statHeat) statHeat.textContent = Format.formatHeat(heat);
+        const statHeatMax = document.getElementById('stat-heat-max');
+        if (statHeatMax) statHeatMax.textContent = Format.formatHeat(maxHeat);
+        const statHeatPercent = document.getElementById('stat-heat-percent');
+        if (statHeatPercent) statHeatPercent.textContent = Format.formatPercent(heatPercent);
 
-        document.getElementById('stat-power-gen').textContent = Format.formatPower(output.power);
-        document.getElementById('stat-heat-gen').textContent = Format.formatHeat(output.heat);
+        const statPowerGen = document.getElementById('stat-power-gen');
+        if (statPowerGen) statPowerGen.textContent = Format.formatPower(output.power);
+        const statHeatGen = document.getElementById('stat-heat-gen');
+        if (statHeatGen) statHeatGen.textContent = Format.formatHeat(output.heat);
 
         // Update bars
         const powerBar = document.getElementById('power-bar');
         if (powerBar) {
-            powerBar.style.width = (power / Player.maxPower * 100) + '%';
+            powerBar.style.width = (power / maxPower * 100) + '%';
         }
 
         const heatBar = document.getElementById('heat-bar');
         if (heatBar) {
-            heatBar.style.width = Player.getHeatPercent() + '%';
+            heatBar.style.width = heatPercent + '%';
             // Color based on heat
-            if (Player.getHeatPercent() > 75) {
+            if (heatPercent > 75) {
                 heatBar.style.backgroundColor = '#8b3333';
-            } else if (Player.getHeatPercent() > 50) {
+            } else if (heatPercent > 50) {
                 heatBar.style.backgroundColor = '#8b7000';
             } else {
                 heatBar.style.backgroundColor = '#2d7d4d';
@@ -289,9 +310,18 @@ const UI = {
         });
 
         // Update building costs
-        document.getElementById('btn-buy-capacitor').textContent = `Capacitor - ${Format.formatCash(CONFIG.CAPACITOR_COST)} (${Player.capacitors})`;
-        document.getElementById('btn-buy-plating').textContent = `Plating - ${Format.formatCash(CONFIG.PLATING_COST)} (${Player.reactorPlating})`;
-        document.getElementById('btn-buy-vent').textContent = `Vent - ${Format.formatCash(CONFIG.VENT_COST)} (${Player.vents})`;
+        const capacitorBtn = document.getElementById('btn-buy-capacitor');
+        if (capacitorBtn) {
+            capacitorBtn.textContent = `Capacitor - ${Format.formatCash(CONFIG.CAPACITOR_COST)} (${Player.capacitors})`;
+        }
+        const platingBtn = document.getElementById('btn-buy-plating');
+        if (platingBtn) {
+            platingBtn.textContent = `Plating - ${Format.formatCash(CONFIG.PLATING_COST)} (${Player.reactorPlating})`;
+        }
+        const ventBtn = document.getElementById('btn-buy-vent');
+        if (ventBtn) {
+            ventBtn.textContent = `Vent - ${Format.formatCash(CONFIG.VENT_COST)} (${Player.vents})`;
+        }
     },
 
     /**
